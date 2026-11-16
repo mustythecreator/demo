@@ -1,0 +1,146 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Silk &amp; Steel: Conquest</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{color-scheme:dark;--p:#0d141dee;--l:#1f3a5a;--a:#2f8cff;--up:#22c55e;--dn:#ef4444;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{height:100%;background:#070b11;color:#e8edf3;font:13px system-ui,sans-serif;overflow:hidden}
+#app{display:flex;height:100%}#cw{flex:1;position:relative;min-width:0}canvas{display:block;touch-action:none}
+button{background:#1a2433;color:#e8edf3;border:1px solid var(--l);border-radius:6px;padding:7px 9px;font:inherit;font-weight:700;font-size:12px}
+button:active,button.on{background:var(--a);border-color:var(--a)}
+#top{position:absolute;top:0;left:0;right:0;display:flex;gap:10px;align-items:center;padding:6px 10px;background:linear-gradient(#070b11ee,#070b1100)}
+.st small{display:block;font-size:8px;letter-spacing:.15em;color:#7f93ab}.st b{font-size:16px}#clock{flex:1;text-align:right;color:#9fb0c4;font-size:12px}
+.pn{position:absolute;background:var(--p);border:1px solid var(--l);border-radius:8px;padding:7px 9px}
+#obj{left:8px;top:46px;width:190px;font-size:11px;line-height:1.5}#obj b{display:block;color:#ffd56b;margin-bottom:2px}.ok{color:var(--up)}
+#news{left:8px;bottom:56px;width:230px;font-size:11px;line-height:1.45}
+#news .u::before{content:'▲ ';color:var(--up)}#news .d::before{content:'✖ ';color:var(--dn)}#news .i::before{content:'ℹ ';color:var(--a)}#news .w::before{content:'⚔ ';color:#ffb347}
+#bar{left:50%;transform:translateX(-50%);bottom:8px;display:flex;gap:6px;align-items:center;width:max-content;max-width:96%}#sel{font-size:11px;color:#9fb0c4;max-width:170px}
+#side{width:min(36vw,250px);background:#0b1118;border-left:1px solid var(--l);padding:8px;overflow:auto}
+.mh{font-weight:800;font-size:14px;margin-bottom:6px;color:#fff}
+.ar{display:grid;grid-template-columns:1fr auto auto 26px;gap:5px;padding:7px 6px;border-radius:6px;border:1px solid transparent;font-size:12px;align-items:center}.ar.on{background:#14223a;border-color:var(--a)}
+.ap{font-weight:700}.up{color:var(--up)}.dn{color:var(--dn)}.ah{color:#ffd56b;font-size:11px}
+.qs{display:flex;gap:4px;margin:8px 0 4px}.qs button{flex:1;padding:6px 0}.tt{font-size:11px;color:#9fb0c4;margin:4px 0}
+.bs{display:flex;gap:6px}.bs button{flex:1;padding:10px 0;font-size:13px}.bb{background:#15803d;border-color:#22c55e}.sb{background:#991b1b;border-color:#ef4444}
+#ov{position:absolute;inset:0;background:#05080ce6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
+#ov h1{font-size:26px;letter-spacing:.1em;text-transform:uppercase}#ov h1 small{display:block;font-size:11px;letter-spacing:.3em;color:var(--a);margin-top:4px}
+#ov p{max-width:420px;color:#9fb0c4;line-height:1.5}#ov button{background:var(--a);border:0;padding:12px 36px;font-size:15px;letter-spacing:.15em}
+@media(orientation:portrait){#app{flex-direction:column}#side{width:100%;height:44%;border-left:0;border-top:1px solid var(--l)}#obj{width:150px;font-size:10px}#news{left:auto;right:8px;top:46px;bottom:auto;width:46%;font-size:10px}}
+</style></head><body>
+<div id="app"><div id="cw"><canvas id="g"></canvas>
+<div id="top"><div class="st"><small>CASH</small><b id="cash"></b></div><div class="st"><small>NET WORTH</small><b id="nw"></b></div><div class="st"><small>PROFIT</small><b id="inc" class="up"></b></div><span id="clock"></span><button data-a="spd">1X</button><button data-a="pause">❚❚</button></div>
+<div id="obj" class="pn"></div><div id="news" class="pn"></div>
+<div id="bar" class="pn"><span id="sel"></span><button data-a="dep">+5 TROOPS $400</button><button data-a="dev">DEVELOP $800</button></div>
+<div id="ov"><h1>Silk &amp; Steel<small>CONQUEST // TRADE WARFARE</small></h1><p>You start with $10,000 and no free income. Trade Gold, Oil, Tech, Energy and Food for profit, then spend it on troops and city development. Every city holds its own worth, and capturing it adds that to your balance. Tap one of your blue tiles, then a neighbouring tile to move troops or attack.</p><p><b>Win:</b> $15,000 net worth, own 10 territories, capture an enemy base.</p><button data-a="start">DEPLOY</button></div></div>
+<div id="side"></div></div>
+<script src="lib/three.min.js"></script><script src="lib/fflate.min.js"></script><script src="lib/GLTFLoader.js"></script><script src="lib/FBXLoader.js"></script><script src="lib/SkeletonUtils.js"></script>
+<script>const FILES={"soldier": "assets/models/soldier.glb", "tank0": "assets/models/Tank.fbx", "tank1": "assets/models/Tank2.fbx", "tank2": "assets/models/Tank3.fbx", "tank3": "assets/models/Tank4.fbx", "hq0": "assets/models/building-skyscraper-a.glb", "hq1": "assets/models/building-skyscraper-b.glb", "hq2": "assets/models/building-skyscraper-c.glb", "hq3": "assets/models/building-skyscraper-d.glb", "city": "assets/models/building-d.glb", "ic0": "assets/ui/gold-bars.png", "ic1": "assets/ui/oil-barrel.png", "ic2": "assets/ui/technology.png", "ic3": "assets/ui/thunderbolt.png", "grass": "assets/textures/grass512.jpg", "click": "assets/audio/universfield-mouse-click-351398.mp3", "cash": "assets/audio/dragon-studio-cash-register-kaching-376867.mp3", "bgm": "assets/audio/hitslab-soft-background-626448.mp3"};const AB={},AS=AB;</script>
+<script>
+const $=id=>document.getElementById(id);
+const SZ=22,DIR=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+const F=[{n:'Your Base',c:'#3b82f6',cp:[-3,0]},{n:'Red Empire',c:'#e5484d',cp:[0,-3]},{n:'Green Alliance',c:'#3dd68c',cp:[3,0]},{n:'Gold Union',c:'#f5b73b',cp:[0,3]}];
+const AS0=[['Gold',2340,.012,'🪙'],['Oil',78.6,.02,'🛢️'],['Tech',175.2,.025,'💾'],['Energy',92.1,.02,'⚡'],['Food',48.75,.015,'🌾']];
+const f$=v=>'$'+(v>=1000?Math.round(v).toLocaleString('en-US'):v.toFixed(2));
+let tiles=[],byK={},A,cash,time,sel,qty,as,over=false,paused=true,speed=1,news,mt,at,evT,scn,cam,ren,rc,last=performance.now();
+for(let q=-3;q<=3;q++)for(let r=-3;r<=3;r++){if(Math.abs(q+r)>3)continue;const t={q,r,x:SZ*1.732*(q+r/2),z:SZ*1.5*r,o:-1,tr:2,cap:-1,dev:0,i:tiles.length};tiles.push(t);byK[q+','+r]=t}
+const nb=t=>DIR.map(d=>byK[(t.q+d[0])+','+(t.r+d[1])]).filter(Boolean);
+const nw=()=>cash+A.reduce((s,a)=>s+a.h*a.p,0);
+const owned=()=>tiles.filter(t=>t.o===0).length;
+const push=(m,c)=>{news.push([m,c]);if(news.length>20)news.shift()};
+function init(){cash=10000;time=0;sel=null;qty=1;as=0;over=false;mt=0;at=0;evT=25;news=[];
+ A=AS0.map(a=>({n:a[0],p:a[1],b:a[1],v:a[2],ic:a[3],h:0,hist:[a[1]]}));
+ tiles.forEach(t=>{t.o=-1;t.tr=2;t.cap=-1;t.dev=0;t.w=200+((t.q*7+t.r*13)&7)*100});
+ F.forEach((f,k)=>{const c=byK[f.cp[0]+','+f.cp[1]];c.o=k;c.tr=8;c.cap=k;c.w=2000;f.t=c;nb(c).forEach(n=>{n.o=k;n.tr=4;n.w=600})});
+ push('Welcome, General. Take territory and trade the market.','i');paint();hud()}
+/* ---------- 3D ---------- */
+const mat=c=>new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.9}),ms=(g,c,x,y,z)=>{const m=new THREE.Mesh(g,mat(c));m.position.set(x,y,z);return m};
+const BX=(w,h,d)=>new THREE.BoxGeometry(w,h,d),CN=(r,h,n)=>new THREE.ConeGeometry(r,h,n||6);
+const DK=new THREE.Color('#1a2418'),UG=BX(6,3,8),UM=F.map(f=>mat(f.c)),meshes=[];
+const GB=BX(8,2.5,11),GT=BX(5,2.2,5),GS=new THREE.CylinderGeometry(1.6,1.8,5,6),GH=new THREE.SphereGeometry(1.6,8,6),GBar=new THREE.CylinderGeometry(.6,.6,8,6),DM=mat('#222'),SK=mat('#e8c9a0');GBar.rotateX(Math.PI/2);GBar.translate(0,0,5);
+let fx=[],AC;const mods={},mix=[],SD={},ICU=[];
+const b64=s=>s;
+const blob=(k,t)=>URL.createObjectURL(new Blob([b64(AS[k])],{type:t}));
+function fit(o,h){const bx=new THREE.Box3().setFromObject(o),sz=bx.getSize(new THREE.Vector3()),s=h/Math.max(sz.x,sz.y,sz.z,1e-6);o.scale.multiplyScalar(s);bx.setFromObject(o);const c=bx.getCenter(new THREE.Vector3());o.position.x-=c.x;o.position.z-=c.z;o.position.y-=bx.min.y;const w=new THREE.Group();w.add(o);return w}
+const DG=new THREE.CylinderGeometry(3.4,3.4,.5,12);function disk(o){const d=new THREE.Mesh(DG,UM[o]);d.position.y=-1.2;return d}
+function play(k,v){try{const a=SD[k];if(!a)return 0;const c=a.cloneNode();c.volume=v||.6;c.play();return 1}catch(e){return 0}}
+async function loadAll(){try{await Promise.all(Object.keys(FILES).map(async k=>{AB[k]=await(await fetch(FILES[k])).arrayBuffer()}))}catch(e){console.log('fetch',e)}
+ try{['click','cash','bgm'].forEach(k=>{if(AS[k]){const a=new Audio(blob(k,'audio/mpeg'));a.preload='auto';SD[k]=a}});
+  [0,1,2,3].forEach(i=>{if(AS['ic'+i])ICU[i]=blob('ic'+i,'image/png')});
+  if(AS.grass){const im=new Image();im.onload=()=>{const t=new THREE.Texture(im);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.needsUpdate=true;mods.gt=1;tiles.forEach(x=>{x.mesh.material.map=t;x.mesh.material.needsUpdate=true});paint()};im.src=blob('grass','image/jpeg')}}catch(e){console.log(e)}
+ try{const gl=new THREE.GLTFLoader(),P=k=>new Promise((ok,no)=>gl.parse(b64(AS[k]),'',ok,no));
+  const sol=await P('soldier');mods.sol=sol;mods.solT=fit(sol.scene,9);
+  const fb=new THREE.FBXLoader();mods.tank=[];
+  for(let i=0;i<4;i++){const o=fb.parse(b64(AS['tank'+i]),'');o.traverse(x=>{if(x.isMesh){const arr=Array.isArray(x.material),l=(arr?x.material:[x.material]).map(m=>{const c=m.clone();if(c.color)c.color.lerp(new THREE.Color(F[i].c),.45);return c});x.material=arr?l:l[0]}});mods.tank[i]=fit(o,15)}
+  const hq=[];for(let i=0;i<4;i++){const g=await P('hq'+i);hq[i]=fit(g.scene,24)}
+  const city=fit((await P('city')).scene,13);
+  F.forEach((f,k)=>{const h=hq[k].clone(true);h.position.y=2;f.t.mesh.add(h);f.t.pg.visible=false});
+  tiles.forEach(t=>{const c=city.clone(true);c.position.set(0,-3.5,0);t.db.material=new THREE.MeshBasicMaterial({visible:false});t.db.add(c)});
+  mods.ok=1;paint()}catch(e){console.log('assets',e)}}
+function snd(f,d,tp,v){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.resume)AC.resume();const o=AC.createOscillator(),g=AC.createGain(),t0=AC.currentTime;o.type=tp||'square';o.frequency.value=f;g.gain.setValueAtTime(v||.05,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(AC.destination);o.start(t0);o.stop(t0+d)}catch(e){}}
+function boom(t,c){const m=new THREE.Mesh(new THREE.SphereGeometry(4,8,6),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.9}));m.position.set(t.x,10,t.z);scn.add(m);fx.push({m,a:0})}
+function tank(o){if(mods.tank&&mods.tank[o]){const g=new THREE.Group(),m=mods.tank[o].clone(true);m.position.y=-1.4;g.add(m,disk(o));return g}const g=new THREE.Group();g.add(new THREE.Mesh(GB,UM[o]));const t=new THREE.Mesh(GT,UM[o]);t.position.y=2.2;g.add(t);const b=new THREE.Mesh(GBar,DM);b.position.y=2.2;g.add(b);g.scale.setScalar(1.3);return g}
+function sold(o){if(mods.solT){const g=new THREE.Group(),c=THREE.SkeletonUtils.clone(mods.solT);c.position.y=-1.4;c.traverse(x=>{x.frustumCulled=false});const m=new THREE.AnimationMixer(c),ac=m.clipAction(THREE.AnimationClip.findByName(mods.sol.animations,"Idle_Gun"));ac.time=Math.random()*2;ac.play();g.userData.mx=m;g.add(c,disk(o));return g}const g=new THREE.Group(),b=new THREE.Mesh(GS,UM[o]),h=new THREE.Mesh(GH,SK);b.position.y=2.5;h.position.y=6;g.add(b,h);g.scale.setScalar(1.3);return g}
+function build3(){ren=new THREE.WebGLRenderer({canvas:$('g'),antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio||1,2));
+ scn=new THREE.Scene();scn.background=new THREE.Color('#081018');scn.fog=new THREE.Fog('#081018',500,1100);cam=new THREE.PerspectiveCamera(35,1.6,10,2000);rc=new THREE.Raycaster();
+ scn.add(new THREE.AmbientLight(0xffffff,.7));const dl=new THREE.DirectionalLight(0xfff0d0,.9);dl.position.set(-120,300,150);scn.add(dl);
+ const sea=ms(new THREE.PlaneGeometry(1600,1600),'#0d2a44',0,-2,0);sea.rotation.x=-Math.PI/2;scn.add(sea);
+ let s=5;const rn=()=>(s=s*16807%2147483647)/2147483647;
+ tiles.forEach(t=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(SZ*.96,SZ*.96,4,6),mat('#555'));m.position.set(t.x,2,t.z);m.userData.i=t.i;t.mesh=m;meshes.push(m);
+  t.edge=new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),new THREE.LineBasicMaterial({color:'#fff'}));m.add(t.edge);
+  t.ug=new THREE.Group();t.ug.position.y=3.5;m.add(t.ug);
+  t.lc=document.createElement('canvas');t.lc.width=t.lc.height=64;t.tex=new THREE.CanvasTexture(t.lc);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t.tex,depthTest:false}));sp.scale.set(13,13,1);sp.position.set(0,17,0);sp.renderOrder=9;m.add(sp);
+  t.db=ms(BX(7,7,7),'#ffd56b',9,5.5,8);t.db.visible=false;m.add(t.db);
+  for(let k=0;k<2;k++){const a=rn()*6.28,d=8+rn()*5;m.add(ms(CN(3,9,6),'#1f5a38',Math.cos(a)*d,6.5,Math.sin(a)*d))}
+  scn.add(m)});
+ F.forEach(f=>{const t=byK[f.cp[0]+','+f.cp[1]],m=t.mesh;f.t=t;const pg=new THREE.Group();t.pg=pg;m.add(pg);pg.add(ms(BX(12,8,12),'#2a3340',0,6,0));t.cb=ms(BX(7,10,7),f.c,0,15,0);pg.add(t.cb);[[-10,-10],[10,-10],[-10,10],[10,10]].forEach(p=>{pg.add(ms(new THREE.CylinderGeometry(2.5,3,12,6),'#3a4350',p[0],8,p[1]),ms(CN(3.5,4,6),f.c,p[0],16,p[1]))})})}
+function rs(){const r=$('cw').getBoundingClientRect(),a=r.width/r.height;ren.setSize(r.width,r.height);cam.aspect=a;const D=a<1?480*Math.max(1,.95/a):430*Math.max(1,1.5/a);cam.position.set(0,.8*D,.6*D);cam.lookAt(0,0,0);cam.updateProjectionMatrix()}
+function lab(t){const x=t.lc.getContext('2d');x.clearRect(0,0,64,64);x.fillStyle='#000c';x.beginPath();x.arc(32,32,22,0,7);x.fill();x.lineWidth=4;x.strokeStyle=t.o<0?'#8a9a76':F[t.o].c;x.stroke();x.fillStyle='#fff';x.font='bold 26px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText(t.tr,32,34);x.font='bold 13px system-ui';x.lineWidth=3;x.strokeStyle='#000';const wt='$'+(t.w>=1000?(t.w/1000).toFixed(1)+'k':t.w);x.strokeText(wt,32,58);x.fillStyle='#ffd56b';x.fillText(wt,32,58);t.tex.needsUpdate=true}
+function paint(){const ns=sel?nb(sel):[];tiles.forEach(t=>{const col=t.o<0?'#5d6e4a':F[t.o].c,m=t.mesh.material,s=t===sel,a=!s&&t.o!==0&&ns.includes(t);
+  m.color.set(col).lerp(DK,mods.gt?.2:.5);m.emissive.set(s?'#9fb4c8':a?'#3a4a5c':col);if(!s&&!a)m.emissive.multiplyScalar(.2);
+  t.edge.material.color.set(t.o<0?'#7f8f6a':col);t.mesh.position.y=s?5:2;t.db.visible=!!t.dev;if(t.cb&&t.o>=0)t.cb.material.color.set(F[t.o].c);
+  const sg=t.o+'|'+Math.min(2,1+Math.floor(t.tr/8))+'|'+Math.min(3,Math.floor(t.tr/4))+'|'+(mods.ok?1:0);if(t.sg!==sg){t.sg=sg;(t.mx||[]).forEach(m=>{const i=mix.indexOf(m);if(i>=0)mix.splice(i,1)});t.mx=[];while(t.ug.children.length)t.ug.remove(t.ug.children[0]);
+  if(t.o>=0){const nt=Math.min(2,1+Math.floor(t.tr/8)),n2=Math.min(3,Math.floor(t.tr/4)),fy=Math.atan2(-t.x,-t.z);[[-7,-7],[7,-7]].slice(0,nt).forEach(p=>{const u=tank(t.o);u.position.set(p[0],0,p[1]);u.rotation.y=fy;t.ug.add(u)});[[-8,6],[0,9],[8,6]].slice(0,n2).forEach(p=>{const u=sold(t.o);u.position.set(p[0],0,p[1]);t.ug.add(u);if(u.userData.mx){mix.push(u.userData.mx);t.mx.push(u.userData.mx)}})}}
+  lab(t)})}
+/* ---------- game ---------- */
+function atk(a,b){const n=a.tr-1,d=Math.round((b.tr+(b.cap>=0?3:0))*(b.dev?1.5:1)),ao=a.o,bo=b.o,nm=b.cap>=0?F[b.cap].n+' base':bo<0?'neutral land':F[bo].n+' land';if(n<1)return;
+ if(n>d){const lw=b.w;b.o=ao;b.w=Math.round(b.w*.5);boom(b,'#ffb347');if(bo>=0){const ix=[2,1,4,0][bo];A[ix].p*=1.03;push('Fighting in '+F[bo].n+' lifts '+A[ix].n+' 3%','w')}if(ao===0){cash+=lw;snd(130,.3,'sawtooth',.09);navigator.vibrate&&navigator.vibrate(40)}b.tr=Math.max(1,Math.floor((n-d)*.8)+1);a.tr=1;
+  if(ao===0)push('You captured '+nm+'! +$'+lw,'u');else if(bo===0)push(F[ao].n+' captured your territory!','d');else if(b.cap>=0||Math.random()<.25)push(F[ao].n+' took '+nm,'w');return 1}
+ b.tr=Math.max(1,b.tr-Math.floor(n*.7));a.tr=1;boom(b,'#9aa4b0');if(ao===0)snd(90,.25,'square',.07);if(ao===0)push('Attack on '+nm+' failed','d');else if(bo===0)push(F[ao].n+' attack repelled','i');return 0}
+function ai(){tiles.forEach(t=>{if(t.o>=0)t.tr=Math.min(25,t.tr+(t.cap>=0?2:1))});
+ for(let k=1;k<4;k++){const c=[];tiles.forEach(a=>{if(a.o===k&&a.tr>=5)nb(a).forEach(b=>{if(b.o!==k)c.push([a,b])})});if(!c.length)continue;
+  const g=c.filter(([a,b])=>a.tr-1>b.tr+(b.cap>=0?3:0)),pk=(g.length&&Math.random()<.85)?g:(Math.random()<.3?c:[]);if(pk.length){const[a,b]=pk[Math.random()*pk.length|0];atk(a,b)}}paint()}
+function market(){A.forEach(a=>{a.p=Math.max(a.b*.3,a.p*(1+(Math.random()-.5)*2*a.v+(a.b-a.p)/a.b*.02));a.hist.push(a.p);if(a.hist.length>12)a.hist.shift()})}
+function event(){const a=A[Math.random()*5|0],up=Math.random()<.5,big=Math.random()<.2,x=big?12+Math.random()*8:4+Math.random()*5;a.p*=1+(up?x:-x)/100;push(big?(up?'🐋 WHALE pumps '+a.n+' +':'💥 RUG PULL: '+a.n+' -')+x.toFixed(0)+'%':a.n+(up?' surges ':' plunges ')+x.toFixed(1)+'% amid regional conflict',up?'u':'d')}
+function end(h,p){over=true;const o=$('ov');o.innerHTML='<h1>'+h+'</h1><p>'+p+'</p><button data-a="start">REDEPLOY</button>';o.style.display='flex'}
+const goals=()=>[nw()>=15000,owned()>=10,tiles.some(t=>t.cap>0&&t.o===0)];
+function upd(dt){time+=dt;
+ mt+=dt;if(mt>1.5){mt=0;market()}at+=dt;if(at>5){at=0;ai()}evT-=dt;if(evT<=0){evT=22+Math.random()*14;event()}
+ if(F[0].t.o!==0)end('DEFEAT','Your base was captured.');else if(goals().every(Boolean))end('VICTORY','All objectives complete in '+Math.floor(time)+' seconds.')}
+function tap(i){const t=tiles[i];if(over)return;play('click')||snd(440,.04);
+ if(!sel){if(t.o===0)sel=t}
+ else if(t===sel)sel=null;
+ else if(nb(sel).includes(t)){if(t.o===0){const m=sel.tr-1;if(m>0){t.tr=Math.min(30,t.tr+m);sel.tr=1}sel=t}else{const w=atk(sel,t);sel=(w&&t.o===0)?t:(sel.o===0?sel:null)}}
+ else sel=t.o===0?t:null;paint();hud()}
+function hud(){const inc=tiles.reduce((s,t)=>s+(t.o===0?(t.dev?24:8):0),0),g=goals();
+ $('cash').textContent=f$(cash);$('nw').textContent=f$(nw());const pl=nw()-10000;$('inc').textContent=(pl>=0?'+':'-')+f$(Math.abs(pl));$('inc').className=pl>=0?'up':'dn';
+ const m=Math.floor(time%120/120*1440);$('clock').textContent='DAY '+(Math.floor(time/120)+1)+'  '+String(m/60|0).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+ $('obj').innerHTML='<b>OBJECTIVES</b>'+[['Net worth $15,000',g[0]],['Own 10 territories ('+owned()+')',g[1]],['Capture an enemy base',g[2]]].map(o=>'<div class="'+(o[1]?'ok':'')+'">'+(o[1]?'✔ ':'○ ')+o[0]+'</div>').join('');
+ $('news').innerHTML=news.slice(-3).map(n=>'<div class="'+n[1]+'">'+n[0]+'</div>').join('');
+ $('sel').textContent=sel?(sel.cap>=0?F[sel.cap].n+' base · ':'Tile · ')+sel.tr+' troops · $'+sel.w+(sel.dev?' · dev':'')+' · tap a neighbour to move/attack':'1. Tap a blue tile';
+ let h='<div class="mh">📈 MARKET</div>';A.forEach((a,i)=>{const c=(a.p/a.hist[0]-1)*100;h+='<div class="ar'+(i===as?' on':'')+'" data-a="as" data-i="'+i+'"><span>'+(ICU[i]?'<img src="'+ICU[i]+'" width=18 height=18 style="vertical-align:-4px">':a.ic)+' '+a.n+'</span><span class="ap">'+f$(a.p)+'</span><span class="'+(c>=0?'up':'dn')+'">'+(c>=0?'+':'')+c.toFixed(1)+'%</span><span class="ah">'+(a.h?'×'+a.h:'')+'</span></div>'});
+ const a=A[as],n=qty==='MAX'?Math.floor(cash/a.p):qty;
+ h+='<div class="qs">'+[1,10,100,'MAX'].map(v=>'<button data-a="q" data-v="'+v+'" class="'+(v===qty?'on':'')+'">'+v+'</button>').join('')+'</div><div class="tt">'+a.n+' × '+n+' = '+f$(n*a.p)+'</div><div class="bs"><button data-a="buy" class="bb">BUY</button><button data-a="sell" class="sb">SELL</button></div><div class="tt">Holdings '+f$(A.reduce((s,x)=>s+x.h*x.p,0))+'</div>';
+ $('side').innerHTML=h}
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-a]');if(!b)return;const k=b.dataset.a;
+ if(k=='start'){snd(300,.1);init();if(SD.bgm){SD.bgm.loop=true;SD.bgm.volume=.25;SD.bgm.play().catch(()=>{})}$('ov').style.display='none';paused=false}
+ else if(k=='pause'){paused=!paused;b.textContent=paused?'▶':'❚❚'}
+ else if(k=='spd'){speed=speed==1?2:1;b.textContent=speed+'X'}
+ else if(k=='as')as=+b.dataset.i;
+ else if(k=='q')qty=b.dataset.v=='MAX'?'MAX':+b.dataset.v;
+ else if(k=='buy'){const a=A[as],m=Math.floor(cash/a.p),n=Math.min(qty==='MAX'?m:qty,m);if(n<1)push('Not enough cash','d');else{cash-=n*a.p;a.h+=n;play('cash')||snd(660,.07)}}
+ else if(k=='sell'){const a=A[as],n=qty==='MAX'?a.h:Math.min(qty,a.h);if(n>0){cash+=n*a.p;a.h-=n;play('cash')||snd(520,.07)}}
+ else if(k=='dep'){if(sel&&sel.o===0&&cash>=400){cash-=400;sel.tr=Math.min(30,sel.tr+5);paint()}else push('Select your tile ($400)','i')}
+ else if(k=='dev'){if(sel&&sel.o===0&&!sel.dev&&cash>=800){cash-=800;sel.dev=1;sel.w+=1200;push('City developed: +$1200 worth, defence x1.5','u');snd(520,.12);paint()}else push('Select an undeveloped tile of yours ($800)','i')}
+ hud()});
+$('g').addEventListener('pointerdown',e=>{const r=$('g').getBoundingClientRect();rc.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},cam);const h=rc.intersectObjects(meshes,false)[0];if(h)tap(h.object.userData.i)});
+function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;if(!paused&&!over)upd(dt*speed);fx.forEach(f=>{f.a+=dt;f.m.scale.setScalar(1+f.a*6);f.m.material.opacity=Math.max(0,.9-f.a*1.8);if(f.a>.5)scn.remove(f.m)});fx=fx.filter(f=>f.a<=.5);mix.forEach(m=>m.update(dt));ren.render(scn,cam);requestAnimationFrame(loop)}
+build3();init();new ResizeObserver(rs).observe($('cw'));rs();setInterval(()=>{if(!paused)hud()},250);requestAnimationFrame(loop);loadAll();
+</script></body></html>
