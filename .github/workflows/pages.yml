@@ -1,0 +1,38 @@
+name: Deploy site
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Copy three.js libs
+        run: |
+          npm install --prefix /tmp/t three@0.128.0
+          mkdir -p www/lib
+          cp /tmp/t/node_modules/three/build/three.min.js www/lib/
+          cp /tmp/t/node_modules/three/examples/js/libs/fflate.min.js www/lib/
+          cp /tmp/t/node_modules/three/examples/js/loaders/GLTFLoader.js www/lib/
+          cp /tmp/t/node_modules/three/examples/js/loaders/FBXLoader.js www/lib/
+          cp /tmp/t/node_modules/three/examples/js/utils/SkeletonUtils.js www/lib/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: www
+      - id: d
+        uses: actions/deploy-pages@v4
