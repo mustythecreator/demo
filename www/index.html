@@ -65,12 +65,15 @@ function play(k,v){try{const a=SD[k];if(!a)return 0;const c=a.cloneNode();c.volu
 const errs=[];
 function bad(w,e){console.log(w,e);errs.push(w+': '+String(e&&e.message||e).slice(0,70));const l=$('ld');if(l){l.style.color='#ffb347';l.innerHTML=errs.join('<br>')}}
 function ok(){tiles.forEach(t=>{t.sg=''});paint()}
+function strip(buf){const dv=new DataView(buf),jl=dv.getUint32(12,true),j=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,20,jl)));delete j.textures;delete j.images;delete j.samplers;(j.materials||[]).forEach(m=>{const p=m.pbrMetallicRoughness;if(p){delete p.baseColorTexture;delete p.metallicRoughnessTexture}delete m.normalTexture;delete m.occlusionTexture;delete m.emissiveTexture});
+ const t=new TextEncoder().encode(JSON.stringify(j)),tl=t.length+(4-t.length%4)%4,rest=new Uint8Array(buf,20+jl),out=new Uint8Array(20+tl+rest.length);out.set(new Uint8Array(buf,0,12));out.set(new Uint8Array(buf,16,4),16);const o=new DataView(out.buffer);o.setUint32(8,out.length,true);o.setUint32(12,tl,true);out.fill(32,20,20+tl);out.set(t,20);out.set(rest,20+tl);return out.buffer}
 async function loadAll(){
  await Promise.all(Object.keys(FILES).map(async k=>{try{const r=await fetch(FILES[k]);if(!r.ok)throw new Error(r.status);AB[k]=await r.arrayBuffer()}catch(e){bad(k,e)}}));
  try{['click','cash','bgm'].forEach(k=>{if(AS[k]){const a=new Audio(blob(k,'audio/mpeg'));a.preload='auto';SD[k]=a}});
   [0,1,2,3].forEach(i=>{if(AS['ic'+i])ICU[i]=blob('ic'+i,'image/png')});
   if(AS.grass){const im=new Image();im.onload=()=>{const t=new THREE.Texture(im);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.needsUpdate=true;mods.gt=1;tiles.forEach(x=>{x.mesh.material.map=t;x.mesh.material.needsUpdate=true});paint()};im.src=blob('grass','image/jpeg')}}catch(e){bad('audio/ui',e)}
- let gl;const P=k=>new Promise((a,b)=>{if(!AS[k])return b(new Error('missing '+k));gl.parse(AS[k],'',a,b)});
+ let gl;const run=d=>new Promise((a,b)=>{const cb=window.createImageBitmap;window.createImageBitmap=undefined;try{gl.parse(d,'',a,b)}catch(e){b(e)}finally{window.createImageBitmap=cb}});
+ const P=k=>{if(!AS[k])return Promise.reject(new Error('missing '+k));return run(AS[k]).catch(()=>run(strip(AS[k])))};
  try{gl=new THREE.GLTFLoader()}catch(e){bad('GLTFLoader',e);return}
  try{const s=await P('soldier');mods.sol=s;mods.solT=fit(s.scene,9);ok()}catch(e){bad('soldier',e)}
  try{const fb=new THREE.FBXLoader();mods.tank=[];
@@ -140,7 +143,7 @@ function hud(){const inc=tiles.reduce((s,t)=>s+(t.o===0?(t.dev?24:8):0),0),g=goa
  h+='<div class="qs">'+[1,10,100,'MAX'].map(v=>'<button data-a="q" data-v="'+v+'" class="'+(v===qty?'on':'')+'">'+v+'</button>').join('')+'</div><div class="tt">'+a.n+' × '+n+' = '+f$(n*a.p)+'</div><div class="bs"><button data-a="buy" class="bb">BUY</button><button data-a="sell" class="sb">SELL</button></div><div class="tt">Holdings '+f$(A.reduce((s,x)=>s+x.h*x.p,0))+'</div>';
  $('side').innerHTML=h}
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-a]');if(!b)return;const k=b.dataset.a;
- if(k=='start'){snd(300,.1);init();if(SD.bgm){SD.bgm.loop=true;SD.bgm.volume=.25;SD.bgm.play().catch(()=>{})}$('ov').style.display='none';paused=false}
+ if(k=='start'){snd(300,.1);init();if(SD.bgm){SD.bgm.loop=true;SD.bgm.volume=.25;SD.bgm.play().catch(()=>{})}$('ov').style.display='none';paused=false;started=true}
  else if(k=='pause'){paused=!paused;b.textContent=paused?'▶':'❚❚'}
  else if(k=='spd'){speed=speed==1?2:1;b.textContent=speed+'X'}
  else if(k=='as')as=+b.dataset.i;
@@ -162,7 +165,9 @@ const endp=e=>{if(!Pt[e.pointerId])return;const t=pts().length==1&&mv<=10&&e.typ
 cv.addEventListener('pointerup',endp);cv.addEventListener('pointercancel',endp);
 cv.addEventListener('wheel',e=>{zm*=e.deltaY>0?1.1:.9;setCam()});
 /* silence sound and pause when the app leaves the screen */
-let bgmWas=false;
+let started=false,bgmWas=false;
+function unlock(){if(started&&!document.hidden&&!over&&SD.bgm&&SD.bgm.paused){SD.bgm.loop=true;SD.bgm.volume=.25;SD.bgm.play().catch(()=>{})}}
+['pointerup','click','touchend'].forEach(ev=>document.addEventListener(ev,unlock));
 function hush(on){try{if(on){if(bgmWas&&SD.bgm)SD.bgm.play().catch(()=>{});bgmWas=false;if(AC&&AC.resume)AC.resume()}
  else{if(SD.bgm&&!SD.bgm.paused)bgmWas=true;if(SD.bgm)SD.bgm.pause();if(AC&&AC.suspend)AC.suspend();if(!paused&&!over){paused=true;const b=document.querySelector('[data-a=pause]');if(b)b.textContent='▶'}}}catch(e){}}
 document.addEventListener('visibilitychange',()=>hush(!document.hidden));addEventListener('pagehide',()=>hush(0));addEventListener('blur',()=>hush(0));addEventListener('focus',()=>hush(!document.hidden));
