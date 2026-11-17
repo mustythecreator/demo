@@ -16,8 +16,8 @@ button:active,button.on{background:var(--a);border-color:var(--a)}
 #bar{left:50%;transform:translateX(-50%);bottom:8px;display:flex;gap:6px;align-items:center;width:max-content;max-width:96%}#sel{font-size:11px;color:#9fb0c4;max-width:170px}
 #side{width:min(36vw,250px);background:#0b1118;border-left:1px solid var(--l);padding:8px;overflow:auto}
 .mh{font-weight:800;font-size:14px;margin-bottom:6px;color:#fff}
-.ar{display:grid;grid-template-columns:1fr auto auto 26px;gap:5px;padding:7px 6px;border-radius:6px;border:1px solid transparent;font-size:12px;align-items:center}.ar.on{background:#14223a;border-color:var(--a)}
-.ap{font-weight:700}.up{color:var(--up)}.dn{color:var(--dn)}.ah{color:#ffd56b;font-size:11px}
+.ar{display:grid;grid-template-columns:1fr auto auto auto;gap:5px;padding:7px 6px;border-radius:6px;border:1px solid transparent;font-size:12px;align-items:center}.ar.on{background:#14223a;border-color:var(--a)}
+.ap{font-weight:700}.up{color:var(--up)}.dn{color:var(--dn)}.ah{color:#ffd56b;font-size:11px}.ar.fl{background:#3a2a10;border-color:#ffb347}
 .qs{display:flex;gap:4px;margin:8px 0 4px}.qs button{flex:1;padding:6px 0}.tt{font-size:11px;color:#9fb0c4;margin:4px 0}
 .bs{display:flex;gap:6px}.bs button{flex:1;padding:10px 0;font-size:13px}.bb{background:#15803d;border-color:#22c55e}.sb{background:#991b1b;border-color:#ef4444}
 #ov{position:absolute;inset:0;background:#05080ce6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
@@ -28,8 +28,8 @@ button:active,button.on{background:var(--a);border-color:var(--a)}
 <div id="app"><div id="cw"><canvas id="g"></canvas>
 <div id="top"><div class="st"><small>CASH</small><b id="cash"></b></div><div class="st"><small>NET WORTH</small><b id="nw"></b></div><div class="st"><small>PROFIT</small><b id="inc" class="up"></b></div><span id="clock"></span><button data-a="spd">1X</button><button data-a="pause">❚❚</button></div>
 <div id="obj" class="pn"></div><div id="news" class="pn"></div>
-<div id="bar" class="pn"><span id="sel"></span><button data-a="dep">+5 TROOPS $400</button><button data-a="dev">DEVELOP $800</button></div>
-<div id="ov"><h1>Silk &amp; Steel<small>CONQUEST // TRADE WARFARE</small></h1><p>You start with $10,000 and no free income. Trade Gold, Oil, Tech, Energy and Food for profit, then spend it on troops and city development. Every city holds its own worth, and capturing it adds that to your balance. Tap one of your blue tiles, then a neighbouring tile to move troops or attack. Drag to move the map, pinch to zoom.</p><p><b>Win:</b> $15,000 net worth, own 10 territories, capture an enemy base.</p><p id="ld" style="font-size:11px">Loading assets...</p><button data-a="start">DEPLOY</button></div></div>
+<div id="bar" class="pn"><span id="sel"></span><button data-a="dep">+5 TROOPS 8🌾/$400</button><button data-a="dev">DEVELOP 5💾/$800</button></div>
+<div id="ov"><h1>Silk &amp; Steel<small>CONQUEST // TRADE WARFARE</small></h1><p>You start with $10,000. Every tile you own produces the commodity shown on it. Trade them for profit, feed troops with Food, develop cities with Tech and burn Oil as attack fuel. Fighting over a tile moves its price. Every city holds its own worth, and capturing it adds that to your balance. Tap one of your blue tiles, then a neighbouring tile to move troops or attack. Drag to move the map, pinch to zoom.</p><p><b>Win:</b> $15,000 net worth, own 10 territories, capture an enemy base.</p><p id="ld" style="font-size:11px">Loading assets...</p><button data-a="start">DEPLOY</button></div></div>
 <div id="side"></div></div>
 <script src="lib/three.min.js"></script><script src="lib/fflate.min.js"></script><script src="lib/GLTFLoader.js"></script><script src="lib/FBXLoader.js"></script><script src="lib/SkeletonUtils.js"></script>
 <script>const FILES={"soldier": "assets/models/soldier.glb", "tank0": "assets/models/Tank.fbx", "tank1": "assets/models/Tank2.fbx", "tank2": "assets/models/Tank3.fbx", "tank3": "assets/models/Tank4.fbx", "hq0": "assets/models/building-skyscraper-a.glb", "hq1": "assets/models/building-skyscraper-b.glb", "hq2": "assets/models/building-skyscraper-c.glb", "hq3": "assets/models/building-skyscraper-d.glb", "city": "assets/models/building-d.glb", "ic0": "assets/ui/gold-bars.png", "ic1": "assets/ui/oil-barrel.png", "ic2": "assets/ui/technology.png", "ic3": "assets/ui/thunderbolt.png", "grass": "assets/textures/grass512.jpg", "click": "assets/audio/universfield-mouse-click-351398.mp3", "cash": "assets/audio/dragon-studio-cash-register-kaching-376867.mp3", "bgm": "assets/audio/hitslab-soft-background-626448.mp3"};const AB={},AS=AB;</script>
@@ -39,13 +39,13 @@ const SZ=22,DIR=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
 const F=[{n:'Your Base',c:'#3b82f6',cp:[-3,0]},{n:'Red Empire',c:'#e5484d',cp:[0,-3]},{n:'Green Alliance',c:'#3dd68c',cp:[3,0]},{n:'Gold Union',c:'#f5b73b',cp:[0,3]}];
 const AS0=[['Gold',2340,.012,'🪙'],['Oil',78.6,.02,'🛢️'],['Tech',175.2,.025,'💾'],['Energy',92.1,.02,'⚡'],['Food',48.75,.015,'🌾']];
 const f$=v=>'$'+(v>=1000?Math.round(v).toLocaleString('en-US'):v.toFixed(2));
-let tiles=[],byK={},A,cash,time,sel,qty,as,over=false,paused=true,speed=1,news,mt,at,evT,scn,cam,ren,rc,last=performance.now();
-for(let q=-3;q<=3;q++)for(let r=-3;r<=3;r++){if(Math.abs(q+r)>3)continue;const t={q,r,x:SZ*1.732*(q+r/2),z:SZ*1.5*r,o:-1,tr:2,cap:-1,dev:0,i:tiles.length};tiles.push(t);byK[q+','+r]=t}
+let tiles=[],byK={},A,cash,time,sel,qty,as,over=false,paused=true,speed=1,news,mt,at,pt=0,fuel=false,evT,scn,cam,ren,rc,last=performance.now();
+for(let q=-3;q<=3;q++)for(let r=-3;r<=3;r++){if(Math.abs(q+r)>3)continue;const t={q,r,x:SZ*1.732*(q+r/2),z:SZ*1.5*r,o:-1,tr:2,cap:-1,dev:0,res:Math.abs(q*2+r*3+q*r)%5,i:tiles.length};tiles.push(t);byK[q+','+r]=t}
 const nb=t=>DIR.map(d=>byK[(t.q+d[0])+','+(t.r+d[1])]).filter(Boolean);
 const nw=()=>cash+A.reduce((s,a)=>s+a.h*a.p,0);
 const owned=()=>tiles.filter(t=>t.o===0).length;
 const push=(m,c)=>{news.push([m,c]);if(news.length>20)news.shift()};
-function init(){cash=10000;time=0;sel=null;qty=1;as=0;over=false;mt=0;at=0;evT=25;news=[];
+function init(){cash=10000;time=0;sel=null;qty=1;as=0;over=false;mt=0;at=0;pt=0;evT=25;news=[];
  A=AS0.map(a=>({n:a[0],p:a[1],b:a[1],v:a[2],ic:a[3],h:0,hist:[a[1]]}));
  tiles.forEach(t=>{t.o=-1;t.tr=2;t.cap=-1;t.dev=0;t.w=200+((t.q*7+t.r*13)&7)*100});
  F.forEach((f,k)=>{const c=byK[f.cp[0]+','+f.cp[1]];c.o=k;c.tr=8;c.cap=k;c.w=2000;f.t=c;nb(c).forEach(n=>{n.o=k;n.tr=4;n.w=600})});
@@ -105,7 +105,7 @@ function build3(){ren=new THREE.WebGLRenderer({canvas:$('g'),antialias:true});re
 let CD=430,zm=1,vx=0,vz=0;
 function setCam(){zm=Math.max(.5,Math.min(1.6,zm));vx=Math.max(-150,Math.min(150,vx));vz=Math.max(-150,Math.min(150,vz));cam.position.set(vx,.8*CD*zm,vz+.6*CD*zm);cam.lookAt(vx,0,vz);cam.updateProjectionMatrix()}
 function rs(){const r=$('cw').getBoundingClientRect(),a=r.width/r.height;ren.setSize(r.width,r.height);cam.aspect=a;CD=a<1?480*Math.max(1,.95/a):430*Math.max(1,1.5/a);setCam()}
-function lab(t){const x=t.lc.getContext('2d');x.clearRect(0,0,64,64);x.fillStyle='#000c';x.beginPath();x.arc(32,32,22,0,7);x.fill();x.lineWidth=4;x.strokeStyle=t.o<0?'#8a9a76':F[t.o].c;x.stroke();x.fillStyle='#fff';x.font='bold 26px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText(t.tr,32,34);x.font='bold 13px system-ui';x.lineWidth=3;x.strokeStyle='#000';const wt='$'+(t.w>=1000?(t.w/1000).toFixed(1)+'k':t.w);x.strokeText(wt,32,58);x.fillStyle='#ffd56b';x.fillText(wt,32,58);t.tex.needsUpdate=true}
+function lab(t){const x=t.lc.getContext('2d');x.clearRect(0,0,64,64);x.fillStyle='#000c';x.beginPath();x.arc(32,32,22,0,7);x.fill();x.lineWidth=4;x.strokeStyle=t.o<0?'#8a9a76':F[t.o].c;x.stroke();x.fillStyle='#fff';x.font='bold 26px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText(t.tr,32,34);x.font='16px system-ui';x.fillText(AS0[t.res][3],53,11);x.font='bold 13px system-ui';x.lineWidth=3;x.strokeStyle='#000';const wt='$'+(t.w>=1000?(t.w/1000).toFixed(1)+'k':t.w);x.strokeText(wt,32,58);x.fillStyle='#ffd56b';x.fillText(wt,32,58);t.tex.needsUpdate=true}
 function paint(){const ns=sel?nb(sel):[];tiles.forEach(t=>{const col=t.o<0?'#5d6e4a':F[t.o].c,m=t.mesh.material,s=t===sel,a=!s&&t.o!==0&&ns.includes(t);
   m.color.set(col).lerp(DK,mods.gt?.2:.5);m.emissive.set(s?'#9fb4c8':a?'#3a4a5c':col);if(!s&&!a)m.emissive.multiplyScalar(.2);
   t.edge.material.color.set(t.o<0?'#7f8f6a':col);t.mesh.position.y=s?5:2;t.db.visible=!!t.dev;if(t.cb&&t.o>=0)t.cb.material.color.set(F[t.o].c);
@@ -113,34 +113,35 @@ function paint(){const ns=sel?nb(sel):[];tiles.forEach(t=>{const col=t.o<0?'#5d6
   if(t.o>=0){const nt=Math.min(2,1+Math.floor(t.tr/8)),n2=Math.min(3,Math.floor(t.tr/4)),fy=Math.atan2(-t.x,-t.z);[[-7,-7],[7,-7]].slice(0,nt).forEach(p=>{const u=tank(t.o);u.position.set(p[0],0,p[1]);u.rotation.y=fy;t.ug.add(u)});[[-8,6],[0,9],[8,6]].slice(0,n2).forEach(p=>{const u=sold(t.o);u.position.set(p[0],0,p[1]);t.ug.add(u);if(u.userData.mx){mix.push(u.userData.mx);t.mx.push(u.userData.mx)}})}}
   lab(t)})}
 /* ---------- game ---------- */
-function atk(a,b){const n=a.tr-1,d=Math.round((b.tr+(b.cap>=0?3:0))*(b.dev?1.5:1)),ao=a.o,bo=b.o,nm=b.cap>=0?F[b.cap].n+' base':bo<0?'neutral land':F[bo].n+' land';if(n<1)return;
- if(n>d){const lw=b.w;b.o=ao;b.w=Math.round(b.w*.5);boom(b,'#ffb347');if(bo>=0){const ix=[2,1,4,0][bo];A[ix].p*=1.03;push('Fighting in '+F[bo].n+' lifts '+A[ix].n+' 3%','w')}if(ao===0){cash+=lw;snd(130,.3,'sawtooth',.09);navigator.vibrate&&navigator.vibrate(40)}b.tr=Math.max(1,Math.floor((n-d)*.8)+1);a.tr=1;
+function atk(a,b){const n=Math.round((a.tr-1)*(a.o===0&&fuel?1.25:1)),d=Math.round((b.tr+(b.cap>=0?3:0))*(b.dev?1.5:1)),ao=a.o,bo=b.o,nm=b.cap>=0?F[b.cap].n+' base':bo<0?'neutral land':F[bo].n+' land';if(n<1)return;
+ if(n>d){const lw=b.w;b.o=ao;b.w=Math.round(b.w*.5);boom(b,'#ffb347');{const rr=A[b.res];rr.p*=1.12;rr.fl=3;push('⚔ '+rr.n+' tile taken: price +12%','w')}if(bo>=0){const ix=[2,1,4,0][bo];A[ix].p*=1.03;push('Fighting in '+F[bo].n+' lifts '+A[ix].n+' 3%','w')}if(ao===0){cash+=lw;snd(130,.3,'sawtooth',.09);navigator.vibrate&&navigator.vibrate(40)}b.tr=Math.max(1,Math.floor((n-d)*.8)+1);a.tr=1;
   if(ao===0)push('You captured '+nm+'! +$'+lw,'u');else if(bo===0)push(F[ao].n+' captured your territory!','d');else if(b.cap>=0||Math.random()<.25)push(F[ao].n+' took '+nm,'w');return 1}
- b.tr=Math.max(1,b.tr-Math.floor(n*.7));a.tr=1;boom(b,'#9aa4b0');if(ao===0)snd(90,.25,'square',.07);if(ao===0)push('Attack on '+nm+' failed','d');else if(bo===0)push(F[ao].n+' attack repelled','i');return 0}
+ b.tr=Math.max(1,b.tr-Math.floor(n*.7));a.tr=1;boom(b,'#9aa4b0');A[b.res].p*=1.04;A[b.res].fl=3;if(ao===0)snd(90,.25,'square',.07);if(ao===0)push('Attack on '+nm+' failed','d');else if(bo===0)push(F[ao].n+' attack repelled','i');return 0}
 function ai(){tiles.forEach(t=>{if(t.o>=0)t.tr=Math.min(25,t.tr+(t.cap>=0?2:1))});
  for(let k=1;k<4;k++){const c=[];tiles.forEach(a=>{if(a.o===k&&a.tr>=5)nb(a).forEach(b=>{if(b.o!==k)c.push([a,b])})});if(!c.length)continue;
   const g=c.filter(([a,b])=>a.tr-1>b.tr+(b.cap>=0?3:0)),pk=(g.length&&Math.random()<.85)?g:(Math.random()<.3?c:[]);if(pk.length){const[a,b]=pk[Math.random()*pk.length|0];atk(a,b)}}paint()}
 function market(){A.forEach(a=>{a.p=Math.max(a.b*.3,a.p*(1+(Math.random()-.5)*2*a.v+(a.b-a.p)/a.b*.02));a.hist.push(a.p);if(a.hist.length>12)a.hist.shift()})}
+function produce(){tiles.forEach(t=>{if(t.o===0){const a=A[t.res];a.h+=3*(t.dev?2:1)/a.b}})}
 function event(){const a=A[Math.random()*5|0],up=Math.random()<.5,big=Math.random()<.2,x=big?12+Math.random()*8:4+Math.random()*5;a.p*=1+(up?x:-x)/100;push(big?(up?'🐋 WHALE pumps '+a.n+' +':'💥 RUG PULL: '+a.n+' -')+x.toFixed(0)+'%':a.n+(up?' surges ':' plunges ')+x.toFixed(1)+'% amid regional conflict',up?'u':'d')}
 function end(h,p){over=true;const o=$('ov');o.innerHTML='<h1>'+h+'</h1><p>'+p+'</p><button data-a="start">REDEPLOY</button>';o.style.display='flex'}
 const goals=()=>[nw()>=15000,owned()>=10,tiles.some(t=>t.cap>0&&t.o===0)];
 function upd(dt){time+=dt;
- mt+=dt;if(mt>1.5){mt=0;market()}at+=dt;if(at>5){at=0;ai()}evT-=dt;if(evT<=0){evT=22+Math.random()*14;event()}
+ mt+=dt;if(mt>1.5){mt=0;market()}pt+=dt;if(pt>5){pt=0;produce()}A.forEach(a=>{if(a.fl>0)a.fl-=dt});at+=dt;if(at>5){at=0;ai()}evT-=dt;if(evT<=0){evT=22+Math.random()*14;event()}
  if(F[0].t.o!==0)end('DEFEAT','Your base was captured.');else if(goals().every(Boolean))end('VICTORY','All objectives complete in '+Math.floor(time)+' seconds.')}
 function tap(i){const t=tiles[i];if(over)return;play('click')||snd(440,.04);
  if(!sel){if(t.o===0)sel=t}
  else if(t===sel)sel=null;
- else if(nb(sel).includes(t)){if(t.o===0){const m=sel.tr-1;if(m>0){t.tr=Math.min(30,t.tr+m);sel.tr=1}sel=t}else{const w=atk(sel,t);sel=(w&&t.o===0)?t:(sel.o===0?sel:null)}}
+ else if(nb(sel).includes(t)){if(t.o===0){const m=sel.tr-1;if(m>0){t.tr=Math.min(30,t.tr+m);sel.tr=1}sel=t}else{fuel=sel.o===0&&sel.tr>1&&A[1].h>=1;if(fuel){A[1].h-=1;push('⛽ 1 Oil burned: +25% attack','i')}const w=atk(sel,t);fuel=false;sel=(w&&t.o===0)?t:(sel.o===0?sel:null)}}
  else sel=t.o===0?t:null;paint();hud()}
 function hud(){const inc=tiles.reduce((s,t)=>s+(t.o===0?(t.dev?24:8):0),0),g=goals();
  $('cash').textContent=f$(cash);$('nw').textContent=f$(nw());const pl=nw()-10000;$('inc').textContent=(pl>=0?'+':'-')+f$(Math.abs(pl));$('inc').className=pl>=0?'up':'dn';
  const m=Math.floor(time%120/120*1440);$('clock').textContent='DAY '+(Math.floor(time/120)+1)+'  '+String(m/60|0).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
  $('obj').innerHTML='<b>OBJECTIVES</b>'+[['Net worth $15,000',g[0]],['Own 10 territories ('+owned()+')',g[1]],['Capture an enemy base',g[2]]].map(o=>'<div class="'+(o[1]?'ok':'')+'">'+(o[1]?'✔ ':'○ ')+o[0]+'</div>').join('');
  $('news').innerHTML=news.slice(-3).map(n=>'<div class="'+n[1]+'">'+n[0]+'</div>').join('');
- $('sel').textContent=sel?(sel.cap>=0?F[sel.cap].n+' base · ':'Tile · ')+sel.tr+' troops · $'+sel.w+(sel.dev?' · dev':'')+' · tap a neighbour to move/attack':'1. Tap a blue tile';
- let h='<div class="mh">📈 MARKET</div>';A.forEach((a,i)=>{const c=(a.p/a.hist[0]-1)*100;h+='<div class="ar'+(i===as?' on':'')+'" data-a="as" data-i="'+i+'"><span>'+(ICU[i]?'<img src="'+ICU[i]+'" width=18 height=18 style="vertical-align:-4px">':a.ic)+' '+a.n+'</span><span class="ap">'+f$(a.p)+'</span><span class="'+(c>=0?'up':'dn')+'">'+(c>=0?'+':'')+c.toFixed(1)+'%</span><span class="ah">'+(a.h?'×'+a.h:'')+'</span></div>'});
+ $('sel').textContent=sel?(sel.cap>=0?F[sel.cap].n+' base · ':'Tile · ')+sel.tr+' troops · '+AS0[sel.res][3]+' · $'+sel.w+(sel.dev?' · dev':'')+' · tap a neighbour to move/attack':'1. Tap a blue tile';
+ const oc=[0,0,0,0,0];tiles.forEach(t=>{if(t.o===0)oc[t.res]+=t.dev?2:1});const own=oc.map((n,i)=>AS0[i][3]+n).join(' ');let h='<div class="mh">📈 MARKET</div>';A.forEach((a,i)=>{const c=(a.p/a.hist[0]-1)*100;h+='<div class="ar'+(i===as?' on':'')+(a.fl>0?' fl':'')+'" data-a="as" data-i="'+i+'"><span>'+(ICU[i]?'<img src="'+ICU[i]+'" width=18 height=18 style="vertical-align:-4px">':a.ic)+' '+a.n+(a.fl>0?' ⚔':'')+'</span><span class="ap">'+f$(a.p)+'</span><span class="'+(c>=0?'up':'dn')+'">'+(c>=0?'+':'')+c.toFixed(1)+'%</span><span class="ah">'+(a.h>.0005?'×'+(+a.h.toFixed(a.h<1?3:a.h<10?2:0)):'')+'</span></div>'});
  const a=A[as],n=qty==='MAX'?Math.floor(cash/a.p):qty;
- h+='<div class="qs">'+[1,10,100,'MAX'].map(v=>'<button data-a="q" data-v="'+v+'" class="'+(v===qty?'on':'')+'">'+v+'</button>').join('')+'</div><div class="tt">'+a.n+' × '+n+' = '+f$(n*a.p)+'</div><div class="bs"><button data-a="buy" class="bb">BUY</button><button data-a="sell" class="sb">SELL</button></div><div class="tt">Holdings '+f$(A.reduce((s,x)=>s+x.h*x.p,0))+'</div>';
+ h+='<div class="qs">'+[1,10,100,'MAX'].map(v=>'<button data-a="q" data-v="'+v+'" class="'+(v===qty?'on':'')+'">'+v+'</button>').join('')+'</div><div class="tt">'+a.n+' × '+n+' = '+f$(n*a.p)+'</div><div class="bs"><button data-a="buy" class="bb">BUY</button><button data-a="sell" class="sb">SELL</button></div><div class="tt">Your tiles make: '+own+'</div><div class="tt">Holdings '+f$(A.reduce((s,x)=>s+x.h*x.p,0))+'</div>';
  $('side').innerHTML=h}
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-a]');if(!b)return;const k=b.dataset.a;
  if(k=='start'){snd(300,.1);init();if(SD.bgm){SD.bgm.loop=true;SD.bgm.volume=.25;SD.bgm.play().catch(()=>{})}$('ov').style.display='none';paused=false;started=true}
@@ -150,8 +151,8 @@ document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-a]')
  else if(k=='q')qty=b.dataset.v=='MAX'?'MAX':+b.dataset.v;
  else if(k=='buy'){const a=A[as],m=Math.floor(cash/a.p),n=Math.min(qty==='MAX'?m:qty,m);if(n<1)push('Not enough cash','d');else{cash-=n*a.p;a.h+=n;play('cash')||snd(660,.07)}}
  else if(k=='sell'){const a=A[as],n=qty==='MAX'?a.h:Math.min(qty,a.h);if(n>0){cash+=n*a.p;a.h-=n;play('cash')||snd(520,.07)}}
- else if(k=='dep'){if(sel&&sel.o===0&&cash>=400){cash-=400;sel.tr=Math.min(30,sel.tr+5);paint()}else push('Select your tile ($400)','i')}
- else if(k=='dev'){if(sel&&sel.o===0&&!sel.dev&&cash>=800){cash-=800;sel.dev=1;sel.w+=1200;push('City developed: +$1200 worth, defence x1.5','u');snd(520,.12);paint()}else push('Select an undeveloped tile of yours ($800)','i')}
+ else if(k=='dep'){if(!(sel&&sel.o===0))push('Select your tile first','i');else if(A[4].h>=8){A[4].h-=8;sel.tr=Math.min(30,sel.tr+5);push('8 Food feeds +5 troops','u');paint()}else if(cash>=400){cash-=400;sel.tr=Math.min(30,sel.tr+5);paint()}else push('Need 8 Food or $400','d')}
+ else if(k=='dev'){if(!(sel&&sel.o===0&&!sel.dev))push('Select an undeveloped tile of yours','i');else{const t5=A[2].h>=5;if(t5||cash>=800){if(t5)A[2].h-=5;else cash-=800;sel.dev=1;sel.w+=1200;push('City developed'+(t5?' with 5 Tech':'')+': +$1200 worth, 2x output, defence x1.5','u');snd(520,.12);paint()}else push('Need 5 Tech or $800','d')}}
  hud()});
 /* map touch: tap selects, drag pans, two fingers zoom */
 const cv=$('g'),Pt={};let mv=0,pd=0;
